@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="cn">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="https://cdn.jsdelivr.net/gh/rylh/rylh.github.io@master/img/favicon.png">
+  <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/rylh/rylh.github.io@master/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="Hoo">
+  <meta name="keywords" content="">
+  <title>搭建jsDelivr+Github图床 - HOO的记事本</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/obsidian.min.css" />
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_yg9cfy8wd6.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script  src="/js/utils.js" ></script>
+<meta name="generator" content="Hexo 5.0.0"><link rel="alternate" href="/atom.xml" title="HOO的记事本" type="application/atom+xml">
+</head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>HOO的记事本</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="iconfont icon-briefcase"></i>
+                工具
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" target="_blank" rel="noopener" href="https://img.hooo.win/">
+                    
+                    图床
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" target="_blank" rel="noopener" href="https://yun.boom.tk/L">
+                    
+                    文件
+                  </a>
+                
+                  
+                  
+                  
+                  <a class="dropdown-item" target="_blank" rel="noopener" href="https://anonfiles.com/">
+                    
+                    匿名床
+                  </a>
+                
+              </div>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('https://cdn.jsdelivr.net/gh/RyLh/imghosting/bg/20200727193426.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-07-27 19:26">
+      2020-07-27, Monday, 7:26 pm
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.1k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      16
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <p>发现好多人用Github+jsDelivr来搭建图床。然后就跟风搭了一个，顺便记录下。</p>
+<p>项目地址：<a target="_blank" rel="noopener" href="https://github.com/yumusb/autoPicCdn">https://github.com/yumusb/autoPicCdn</a></p>
+<p>先创建一个仓库用于存放图片<br>把项目下下来后，更改up.php的配置信息。填上用户名、仓库名以及Token（repo：Full control of private repositories 和write:packages前打勾）。填上数据库名、用户名、密码等信息；背景图可以在mystyle.css处修改。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/settings/tokens">https://github.com/settings/tokens</a></p>
+<p>准备好后开始搭建环境</p>
+<p>因为已装有caddy，所以装个PHP7.4+Mysqal就好。</p>
+<h2 id="安装PHP7-4"><a href="#安装PHP7-4" class="headerlink" title="安装PHP7.4"></a>安装PHP7.4</h2><p>安装apt-transport-https</p>
+<div class="hljs"><pre><code class="hljs bash">apt-get install apt-transport-https lsb-release ca-certificates</code></pre></div>
+<p>安装Key</p>
+<div class="hljs"><pre><code class="hljs bash">wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg</code></pre></div>
+<p>添加源</p>
+<div class="hljs"><pre><code class="hljs bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;deb https://packages.sury.org/php/ <span class="hljs-subst">$(lsb_release -sc)</span> main&quot;</span> &gt; /etc/apt/sources.list.d/php.list</code></pre></div>
+<div class="hljs"><pre><code class="hljs bash">apt-get update</code></pre></div>
+<p>安装PHP74</p>
+<div class="hljs"><pre><code class="hljs bash">apt install php7.4-fpm php7.4-mysql php7.4-curl php7.4-gd php7.4-mbstring php7.4-xml php7.4-xmlrpc php7.4-zip php7.4-opcache php7.4-sqlite3 php7.4-cgi php7.4-cli php7.4-json php7.4-imap php7.4-intl php7.4-imagick  -y</code></pre></div>
+<p>关闭fix_pathinfo</p>
+<div class="hljs"><pre><code class="hljs bash">sed -i <span class="hljs-string">&#x27;s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/&#x27;</span> /etc/php/7.4/cgi/php.ini</code></pre></div>
+<h3 id="设置自启动"><a href="#设置自启动" class="headerlink" title="设置自启动"></a>设置自启动</h3><div class="hljs"><pre><code class="hljs bash">systemctl <span class="hljs-built_in">enable</span> php7.4-fpm</code></pre></div>
+<h2 id="安装mariadb（MySQL）"><a href="#安装mariadb（MySQL）" class="headerlink" title="安装mariadb（MySQL）"></a>安装mariadb（MySQL）</h2><p>系统默认使用mariabd代替mysql，两者命令一样。</p>
+<div class="hljs"><pre><code class="hljs bash">apt install mysql-server -y</code></pre></div>
+<h3 id="设置MySQL"><a href="#设置MySQL" class="headerlink" title="设置MySQL"></a>设置MySQL</h3><p>登录MySQL</p>
+<div class="hljs"><pre><code class="hljs bash">mysql -u root</code></pre></div>
+<p>删除root账号</p>
+<div class="hljs"><pre><code class="hljs mysql">drop user &#39;root&#39;@&#39;localhost&#39;;</code></pre></div>
+<p>新建root账号，并设密码：9981</p>
+<div class="hljs"><pre><code class="hljs mysql">create user &#39;root&#39;@&#39;%&#39; identified by &#39;9981&#39;;</code></pre></div>
+<p>给root账号授权</p>
+<div class="hljs"><pre><code class="hljs mysql">grant all privileges on *.* to &#39;root&#39;@&#39;%&#39; with grant option;</code></pre></div>
+<p>创建imghosting数据库</p>
+<div class="hljs"><pre><code class="hljs mysql">create database imghosting;</code></pre></div>
+<p>创建imghosting数据库的用户：abc、密码：123456，并授权</p>
+<div class="hljs"><pre><code class="hljs mysql">grant all on imghosting.* to abc@localhost identified by &quot;123456&quot;;</code></pre></div>
+<p>使上述配置生效</p>
+<div class="hljs"><pre><code class="hljs mysql">flush privileges;</code></pre></div>
+<p>退出</p>
+<div class="hljs"><pre><code class="hljs mysql">exit</code></pre></div>
+
+<h3 id="导入MySQL"><a href="#导入MySQL" class="headerlink" title="导入MySQL"></a>导入MySQL</h3><p>创建目录，把项目上传到img目录</p>
+<div class="hljs"><pre><code class="hljs bash">mkdir -p /var/www/img
+<span class="hljs-built_in">cd</span>  /var/www/img
+chown -R www-data:www-data /var/www/img</code></pre></div>
+
+<p>导入数据</p>
+<div class="hljs"><pre><code class="hljs bash">mysql -uabc -p123456 imghosting &lt; pic.sql</code></pre></div>
+<p>//mysql -u用户名 -p密码 数据库名 &lt; pic.sql</p>
+<h3 id="设置自启动-1"><a href="#设置自启动-1" class="headerlink" title="设置自启动"></a>设置自启动</h3><div class="hljs"><pre><code class="hljs bash">systemctl <span class="hljs-built_in">enable</span> mariadb</code></pre></div>
+
+
+<h2 id="配置Caddyfile文件"><a href="#配置Caddyfile文件" class="headerlink" title="配置Caddyfile文件"></a>配置Caddyfile文件</h2><div class="hljs"><pre><code class="hljs Text">img.hooo.win &#123;
+  gzip
+  root /var/www/img
+  tls 123@gmail.com
+  fastcgi / /run/php/php7.4-fpm.sock php &#123;  
+    env PATH / bin
+    ext .php
+    split .php
+    index index.php
+  &#125;
+&#125;</code></pre></div>
+<h2 id="完成"><a href="#完成" class="headerlink" title="完成"></a>完成</h2><p>重启下MySQL、PHP和Caddy</p>
+<div class="hljs"><pre><code class="hljs bash">systemctl restart mysql
+systemctl restart php7.4-fpm
+systemctl restart caddy</code></pre></div>
+
+<h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><div class="hljs"><pre><code class="hljs bash">systemctl <span class="hljs-built_in">enable</span> caddy
+systemctl <span class="hljs-built_in">enable</span> php7.4-fpm
+systemctl <span class="hljs-built_in">enable</span> mariadb
+//设置自启动
+
+systemctl restart php7.4-fpm 
+//重启php
+systemctl start php7.4-fpm 
+//启动php
+systemctl stop php7.4-fpm 
+//停止php
+systemctl status php7.4-fpm 
+//php状态
+
+systemctl start caddy
+//启动Caddy
+systemctl stop caddy
+//停止Caddy
+systemctl restart caddy
+//重启Caddy
+systemctl status caddy
+//Caddy状态
+
+systemctl start mysql
+//启动mysql
+systemctl stop mysql
+//停止mysql
+systemctl restart mysql
+//重启mysql
+systemctl status mysql
+//mysql状态</code></pre></div>
+
+<h2 id="利用PicGo方便本地使用"><a href="#利用PicGo方便本地使用" class="headerlink" title="利用PicGo方便本地使用"></a>利用PicGo方便本地使用</h2><p>项目地址：<a target="_blank" rel="noopener" href="https://github.com/Molunerfinn/PicGo">https://github.com/Molunerfinn/PicGo</a></p>
+<h3 id="PicGo设置"><a href="#PicGo设置" class="headerlink" title="PicGo设置"></a>PicGo设置</h3><p>在插件设置中搜索“web-uploader”</p>
+<p>安装后在图床设置里找到“自定义Web图床”</p>
+<div class="hljs"><pre><code class="hljs text">API地址：填写up.php地址
+POST参数名：pic
+JSON路径：data.url</code></pre></div>
+
+<p>PicGo本身就支持GIthub图床其实想想也没必要这样调用,</p>
+<p>直接在图床设置里找到“Github图床“</p>
+<div class="hljs"><pre><code class="hljs text">仓库名：用户名/imghosting
+分支名：master
+Token:填写Token
+路径：picgo/                //可以建一个picgo目录用来区分开跟网页上传的不同
+自定义域名：https://cdn.jsdelivr.net/gh/用户名/仓库名@master</code></pre></div>
+
+<h2 id="关于jsDelivr"><a href="#关于jsDelivr" class="headerlink" title="关于jsDelivr"></a>关于jsDelivr</h2><p> 通过jsDelivr引用资源 </p>
+<p>使用方法：<a href="https://link.zhihu.com/?target=https://cdn.jsdelivr.net/gh/">https://cdn.jsdelivr.net/gh/</a>你的用户名/你的仓库名@发布的版本号/文件路径</p>
+<p>比如：<a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/gh/aaa/myjs@1.0/01.js">https://cdn.jsdelivr.net/gh/aaa/myjs@1.0/01.js</a></p>
+<p>版本号并不是必需的，只是为了区分开新旧资源，如果不使用版本号，将会直接引用最新资源，</p>
+<p>比如：<a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/gh/aaa/myjs/01.js">https://cdn.jsdelivr.net/gh/aaa/myjs/01.js</a></p>
+<p>除此之外还可以使用某个范围内的版本，查看所有资源等</p>
+<div class="hljs"><pre><code class="hljs text">// 加载任何Github发布、提交或分支
+https://cdn.jsdelivr.net/gh/user/repo@version/file
+
+// 加载 jQuery v3.2.1
+https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js
+
+// 使用版本范围而不是特定版本
+https://cdn.jsdelivr.net/gh/jquery/jquery@3.2/dist/jquery.min.js 
+https://cdn.jsdelivr.net/gh/jquery/jquery@3/dist/jquery.min.js
+
+// 完全省略该版本以获取最新版本
+https://cdn.jsdelivr.net/gh/jquery/jquery/dist/jquery.min.js
+
+// 将“.min”添加到任何JS/CSS文件中以获取缩小版本，如果不存在，将为会自动生成
+https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js
+
+// 在末尾添加 / 以获取资源目录列表
+https://cdn.jsdelivr.net/gh/jquery/jquery/</code></pre></div>
+
+<p>似乎没了。`</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E8%AE%B0%E5%BD%95/">记录</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/jsDelivr/">jsDelivr</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%9B%BE%E5%BA%8A/">图床</a>
+                    
+                      <a class="hover-with-bg" href="/tags/caddy/">caddy</a>
+                    
+                      <a class="hover-with-bg" href="/tags/php/">php</a>
+                    
+                      <a class="hover-with-bg" href="/tags/mysql/">mysql</a>
+                    
+                      <a class="hover-with-bg" href="/tags/picgo/">picgo</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/07/16/hello-world/">
+                        <span class="hidden-mobile">Hello World</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <div class="comments" id="comments">
+                
+                
+  <div id="vcomments"></div>
+  <script type="text/javascript">
+    function loadValine() {
+      addScript('https://cdn.staticfile.org/valine/1.4.14/Valine.min.js', function () {
+        new Valine({
+          el: "#vcomments",
+          app_id: "oQ0MC23EaQ5XQoTCpQwcI6pl-MdYXbMMI",
+          app_key: "NSGQxM8tgDQ13No7REOCWzwN",
+          placeholder: "说点什么",
+          path: window.location.pathname,
+          avatar: "wavatar",
+          meta: ["nick","mail","link"],
+          pageSize: "10",
+          lang: "zh-CN",
+          highlight: false,
+          recordIP: false,
+          serverURLs: "",
+        });
+      });
+    }
+    createObserver(loadValine, 'vcomments');
+  </script>
+  <noscript>Please enable JavaScript to view the <a target="_blank" href="https://valine.js.org" rel="nofollow noopener noopener">comments
+      powered by Valine.</a></noscript>
+
+
+              </div>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: 'article.markdown-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "搭建jsDelivr+Github图床&nbsp;",
+      ],
+      cursorChar: "|",
+      typeSpeed: 100,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

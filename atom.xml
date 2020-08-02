@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>HOO的记事本</title>
+  
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://hooo.win/"/>
+  <updated>2020-07-27T11:26:50.000Z</updated>
+  <id>http://hooo.win/</id>
+  
+  <author>
+    <name>Hoo</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>搭建jsDelivr+Github图床</title>
+    <link href="http://hooo.win/2020/07/27/%E6%90%AD%E5%BB%BAjsDelivr-Github%E5%9B%BE%E5%BA%8A/"/>
+    <id>http://hooo.win/2020/07/27/%E6%90%AD%E5%BB%BAjsDelivr-Github%E5%9B%BE%E5%BA%8A/</id>
+    <published>2020-07-27T11:26:50.000Z</published>
+    <updated>2020-07-27T11:26:50.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>发现好多人用Github+jsDelivr来搭建图床。然后就跟风搭了一个，顺便记录下。</p><p>项目地址：<a href="https://github.com/yumusb/autoPicCdn">https://github.com/yumusb/autoPicCdn</a></p><p>先创建一个仓库用于存放图片<br>把项目下下来后，更改up.php的配置信息。填上用户名、仓库名以及Token（repo：Full control of private repositories 和write:packages前打勾）。填上数据库名、用户名、密码等信息；背景图可以在mystyle.css处修改。</p><p><a href="https://github.com/settings/tokens">https://github.com/settings/tokens</a></p><p>准备好后开始搭建环境</p><p>因为已装有caddy，所以装个PHP7.4+Mysqal就好。</p><h2 id="安装PHP7-4"><a href="#安装PHP7-4" class="headerlink" title="安装PHP7.4"></a>安装PHP7.4</h2><p>安装apt-transport-https</p><pre><code class="hljs bash">apt-get install apt-transport-https lsb-release ca-certificates</code></pre><p>安装Key</p><pre><code class="hljs bash">wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg</code></pre><p>添加源</p><pre><code class="hljs bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;deb https://packages.sury.org/php/ <span class="hljs-subst">$(lsb_release -sc)</span> main&quot;</span> &gt; /etc/apt/sources.list.d/php.list</code></pre><pre><code class="hljs bash">apt-get update</code></pre><p>安装PHP74</p><pre><code class="hljs bash">apt install php7.4-fpm php7.4-mysql php7.4-curl php7.4-gd php7.4-mbstring php7.4-xml php7.4-xmlrpc php7.4-zip php7.4-opcache php7.4-sqlite3 php7.4-cgi php7.4-cli php7.4-json php7.4-imap php7.4-intl php7.4-imagick  -y</code></pre><p>关闭fix_pathinfo</p><pre><code class="hljs bash">sed -i <span class="hljs-string">&#x27;s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/&#x27;</span> /etc/php/7.4/cgi/php.ini</code></pre><h3 id="设置自启动"><a href="#设置自启动" class="headerlink" title="设置自启动"></a>设置自启动</h3><pre><code class="hljs bash">systemctl <span class="hljs-built_in">enable</span> php7.4-fpm</code></pre><h2 id="安装mariadb（MySQL）"><a href="#安装mariadb（MySQL）" class="headerlink" title="安装mariadb（MySQL）"></a>安装mariadb（MySQL）</h2><p>系统默认使用mariabd代替mysql，两者命令一样。</p><pre><code class="hljs bash">apt install mysql-server -y</code></pre><h3 id="设置MySQL"><a href="#设置MySQL" class="headerlink" title="设置MySQL"></a>设置MySQL</h3><p>登录MySQL</p><pre><code class="hljs bash">mysql -u root</code></pre><p>删除root账号</p><pre><code class="hljs mysql">drop user &#39;root&#39;@&#39;localhost&#39;;</code></pre><p>新建root账号，并设密码：9981</p><pre><code class="hljs mysql">create user &#39;root&#39;@&#39;%&#39; identified by &#39;9981&#39;;</code></pre><p>给root账号授权</p><pre><code class="hljs mysql">grant all privileges on *.* to &#39;root&#39;@&#39;%&#39; with grant option;</code></pre><p>创建imghosting数据库</p><pre><code class="hljs mysql">create database imghosting;</code></pre><p>创建imghosting数据库的用户：abc、密码：123456，并授权</p><pre><code class="hljs mysql">grant all on imghosting.* to abc@localhost identified by &quot;123456&quot;;</code></pre><p>使上述配置生效</p><pre><code class="hljs mysql">flush privileges;</code></pre><p>退出</p><pre><code class="hljs mysql">exit</code></pre><h3 id="导入MySQL"><a href="#导入MySQL" class="headerlink" title="导入MySQL"></a>导入MySQL</h3><p>创建目录，把项目上传到img目录</p><pre><code class="hljs bash">mkdir -p /var/www/img<span class="hljs-built_in">cd</span>  /var/www/imgchown -R www-data:www-data /var/www/img</code></pre><p>导入数据</p><pre><code class="hljs bash">mysql -uabc -p123456 imghosting &lt; pic.sql</code></pre><p>//mysql -u用户名 -p密码 数据库名 &lt; pic.sql</p><h3 id="设置自启动-1"><a href="#设置自启动-1" class="headerlink" title="设置自启动"></a>设置自启动</h3><pre><code class="hljs bash">systemctl <span class="hljs-built_in">enable</span> mariadb</code></pre><h2 id="配置Caddyfile文件"><a href="#配置Caddyfile文件" class="headerlink" title="配置Caddyfile文件"></a>配置Caddyfile文件</h2><pre><code class="hljs Text">img.hooo.win &#123;  gzip  root /var/www/img  tls 123@gmail.com  fastcgi / /run/php/php7.4-fpm.sock php &#123;      env PATH / bin    ext .php    split .php    index index.php  &#125;&#125;</code></pre><h2 id="完成"><a href="#完成" class="headerlink" title="完成"></a>完成</h2><p>重启下MySQL、PHP和Caddy</p><pre><code class="hljs bash">systemctl restart mysqlsystemctl restart php7.4-fpmsystemctl restart caddy</code></pre><h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><pre><code class="hljs bash">systemctl <span class="hljs-built_in">enable</span> caddysystemctl <span class="hljs-built_in">enable</span> php7.4-fpmsystemctl <span class="hljs-built_in">enable</span> mariadb//设置自启动systemctl restart php7.4-fpm //重启phpsystemctl start php7.4-fpm //启动phpsystemctl stop php7.4-fpm //停止phpsystemctl status php7.4-fpm //php状态systemctl start caddy//启动Caddysystemctl stop caddy//停止Caddysystemctl restart caddy//重启Caddysystemctl status caddy//Caddy状态systemctl start mysql//启动mysqlsystemctl stop mysql//停止mysqlsystemctl restart mysql//重启mysqlsystemctl status mysql//mysql状态</code></pre><h2 id="利用PicGo方便本地使用"><a href="#利用PicGo方便本地使用" class="headerlink" title="利用PicGo方便本地使用"></a>利用PicGo方便本地使用</h2><p>项目地址：<a href="https://github.com/Molunerfinn/PicGo">https://github.com/Molunerfinn/PicGo</a></p><h3 id="PicGo设置"><a href="#PicGo设置" class="headerlink" title="PicGo设置"></a>PicGo设置</h3><p>在插件设置中搜索“web-uploader”</p><p>安装后在图床设置里找到“自定义Web图床”</p><pre><code class="hljs text">API地址：填写up.php地址POST参数名：picJSON路径：data.url</code></pre><p>PicGo本身就支持GIthub图床其实想想也没必要这样调用,</p><p>直接在图床设置里找到“Github图床“</p><pre><code class="hljs text">仓库名：用户名/imghosting分支名：masterToken:填写Token路径：picgo/                //可以建一个picgo目录用来区分开跟网页上传的不同自定义域名：https://cdn.jsdelivr.net/gh/用户名/仓库名@master</code></pre><h2 id="关于jsDelivr"><a href="#关于jsDelivr" class="headerlink" title="关于jsDelivr"></a>关于jsDelivr</h2><p> 通过jsDelivr引用资源 </p><p>使用方法：<a href="https://link.zhihu.com/?target=https://cdn.jsdelivr.net/gh/">https://cdn.jsdelivr.net/gh/</a>你的用户名/你的仓库名@发布的版本号/文件路径</p><p>比如：<a href="https://cdn.jsdelivr.net/gh/aaa/myjs@1.0/01.js">https://cdn.jsdelivr.net/gh/aaa/myjs@1.0/01.js</a></p><p>版本号并不是必需的，只是为了区分开新旧资源，如果不使用版本号，将会直接引用最新资源，</p><p>比如：<a href="https://cdn.jsdelivr.net/gh/aaa/myjs/01.js">https://cdn.jsdelivr.net/gh/aaa/myjs/01.js</a></p><p>除此之外还可以使用某个范围内的版本，查看所有资源等</p><pre><code class="hljs text">// 加载任何Github发布、提交或分支https://cdn.jsdelivr.net/gh/user/repo@version/file// 加载 jQuery v3.2.1https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.min.js// 使用版本范围而不是特定版本https://cdn.jsdelivr.net/gh/jquery/jquery@3.2/dist/jquery.min.js https://cdn.jsdelivr.net/gh/jquery/jquery@3/dist/jquery.min.js// 完全省略该版本以获取最新版本https://cdn.jsdelivr.net/gh/jquery/jquery/dist/jquery.min.js// 将“.min”添加到任何JS/CSS文件中以获取缩小版本，如果不存在，将为会自动生成https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/src/core.min.js// 在末尾添加 / 以获取资源目录列表https://cdn.jsdelivr.net/gh/jquery/jquery/</code></pre><p>似乎没了。`</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;发现好多人用Github+jsDelivr来搭建图床。然后就跟风搭了一个，顺便记录下。&lt;/p&gt;
+&lt;p&gt;项目地址：&lt;a href=&quot;https://github.com/yumusb/autoPicCdn&quot;&gt;https://github.com/yumusb/autoPicC
+      
+    
+    </summary>
+    
+    
+      <category term="记录" scheme="http://hooo.win/categories/%E8%AE%B0%E5%BD%95/"/>
+    
+    
+      <category term="jsDelivr" scheme="http://hooo.win/tags/jsDelivr/"/>
+    
+      <category term="图床" scheme="http://hooo.win/tags/%E5%9B%BE%E5%BA%8A/"/>
+    
+      <category term="caddy" scheme="http://hooo.win/tags/caddy/"/>
+    
+      <category term="php" scheme="http://hooo.win/tags/php/"/>
+    
+      <category term="mysql" scheme="http://hooo.win/tags/mysql/"/>
+    
+      <category term="picgo" scheme="http://hooo.win/tags/picgo/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Hello World</title>
+    <link href="http://hooo.win/2020/07/16/hello-world/"/>
+    <id>http://hooo.win/2020/07/16/hello-world/</id>
+    <published>2020-07-15T19:27:00.000Z</published>
+    <updated>2020-07-15T23:05:15.483Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="你好，世界！"><a href="#你好，世界！" class="headerlink" title="你好，世界！"></a>你好，世界！</h2><p>折腾了一天，终于大致上弄好了。<br>好像已经很多年没有写西，删了又建，建了又删。想记录点什么又不太想记录点什么，想记得些什么却又想忘却些什么？<br>这两年整个世界都在变化，谁也不知道明天的世界会是怎么样。还是试着自娱自乐的记录些什么吧。<br><strong>世界，你还好吗？</strong></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;你好，世界！&quot;&gt;&lt;a href=&quot;#你好，世界！&quot; class=&quot;headerlink&quot; title=&quot;你好，世界！&quot;&gt;&lt;/a&gt;你好，世界！&lt;/h2&gt;&lt;p&gt;折腾了一天，终于大致上弄好了。&lt;br&gt;好像已经很多年没有写西，删了又建，建了又删。想记录点什么又不太想记录点
+      
+    
+    </summary>
+    
+    
+      <category term="心情" scheme="http://hooo.win/categories/%E5%BF%83%E6%83%85/"/>
+    
+    
+      <category term="心情" scheme="http://hooo.win/tags/%E5%BF%83%E6%83%85/"/>
+    
+      <category term="吐嘈" scheme="http://hooo.win/tags/%E5%90%90%E5%98%88/"/>
+    
+  </entry>
+  
+</feed>
