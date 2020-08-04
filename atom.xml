@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://hooo.win/"/>
-  <updated>2020-07-27T11:26:50.000Z</updated>
+  <updated>2020-08-02T10:22:50.000Z</updated>
   <id>http://hooo.win/</id>
   
   <author>
@@ -15,6 +15,33 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>搭建FreshRSS</title>
+    <link href="http://hooo.win/2020/08/02/%E6%90%AD%E5%BB%BAFreshRSS/"/>
+    <id>http://hooo.win/2020/08/02/%E6%90%AD%E5%BB%BAFreshRSS/</id>
+    <published>2020-08-02T10:22:50.000Z</published>
+    <updated>2020-08-02T10:22:50.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>一直都是RSS阅读的重度依赖者，由于懒，所以都是选择使用Inoreader、Feedly之类的平台进行订阅阅读，但是由于各式各样的原因，不得不让我放弃它们开始折腾自建。</p><p>目前自建使用比较多的应该是Tiny Tiny RSS、Miniflux和FreshRSS这三款，三者中用的最多的应该TTRSS，因为它功能最齐全。但是配置复杂，页面加载慢等等问题让我最终还是选择了FreshRSS，页面清爽加载也快，我需要的都能满足。</p><h2 id="FreshRSS"><a href="#FreshRSS" class="headerlink" title="FreshRSS"></a>FreshRSS</h2><p>由于之前搭图床时用的就是caddy+php7.4+mariadb，所有部署起来也方便，直接建多个数据库和用户，然后修改增加caddy的Caddyfile文件即可。</p><p>官网地址：<a href="https://freshrss.org/">https://freshrss.org/</a></p><p>项目地址：<a href="https://github.com/FreshRSS/FreshRSS">https://github.com/FreshRSS/FreshRSS</a></p><h3 id="安装要求"><a href="#安装要求" class="headerlink" title="安装要求"></a>安装要求</h3><p><img src="https://cdn.jsdelivr.net/gh/RyLh/imghosting@latest/2020/08/02/56b832ff7a59b7e6d0594631d4e1a58c.png"></p><p>另外没有提到，需要Fileinfo扩展。详情：<a href="https://freshrss.org/#requirements">https://freshrss.org/#requirements</a></p><h3 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h3><p>创建目录</p><pre><code class="hljs bash">mkdir -p /usr/share/rss</code></pre><p>进入目录</p><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> /usr/share/rss</code></pre><p>下载FreshRSS</p><pre><code class="hljs bash">wget https://github.com/FreshRSS/FreshRSS/archive/master.zip</code></pre><p>安装解压</p><pre><code class="hljs bash">apt-get install unzip</code></pre><p>解压FreshRSS</p><pre><code class="hljs bash">unzip master.zip</code></pre><p>复制FreshRSS到本目录</p><pre><code class="hljs bash">cp -R FreshRSS-master/* .</code></pre><p>删除压缩包</p><pre><code class="hljs bash">rm -f master.zip</code></pre><p>删除解压目录</p><pre><code class="hljs bash">rm -rf FreshRSS-master/</code></pre><p>指定用户组并更改data目录权限</p><pre><code class="hljs bash">chown -R www-data:www-data . &amp;&amp; chmod -R g+r . &amp;&amp; chmod -R g+w ./data/</code></pre><p>更改本目录权限</p><pre><code class="hljs bash">chmod -R g+w .</code></pre><p>链接到WEB服务目录</p><pre><code class="hljs bash">ln -s /usr/share/rss/p/ /var/www/rss</code></pre><h3 id="数据库设置"><a href="#数据库设置" class="headerlink" title="数据库设置"></a>数据库设置</h3><p>用ROOT用户登录mysql，密码9981</p><pre><code class="hljs bash">mysql -uroot -p9981</code></pre><p>创建rss数据库</p><pre><code class="hljs mysql">create database rss;</code></pre><p>创建用户xxx密码123456</p><pre><code class="hljs mysql">create user &#39;xxx&#39;@&#39;localhost&#39; identified by &#39;123456&#39;;</code></pre><p>授权</p><pre><code class="hljs mysql">grant all on rss.* to &#39;xxx&#39;@&#39;localhost&#39;;</code></pre><p>刷新</p><pre><code class="hljs mysql">flush privileges;</code></pre><p>退出</p><pre><code class="hljs mysql">exit</code></pre><h3 id="配置Caddyfile文件"><a href="#配置Caddyfile文件" class="headerlink" title="配置Caddyfile文件"></a>配置Caddyfile文件</h3><pre><code class="hljs conf">rss.hooo.win &#123;  gzip  root &#x2F;var&#x2F;www&#x2F;rss  tls biuboom@mail.ru  fastcgi &#x2F; &#x2F;run&#x2F;php&#x2F;php7.4-fpm.sock php &#123;      env PATH &#x2F; bin    ext .php    split .php    index index.php  &#125;&#125;</code></pre><p>打开网站填写资料安装。</p><h3 id="自动更新RSS"><a href="#自动更新RSS" class="headerlink" title="自动更新RSS"></a>自动更新RSS</h3><p>创建编辑定时任务</p><pre><code class="hljs bash">vim /etc/cron.d/FreshRSS</code></pre><p>按i输入以下内容（每半小时运行一次）</p><pre><code class="hljs vim"><span class="hljs-number">0</span>,<span class="hljs-number">30</span> * * * * www-data php -<span class="hljs-keyword">f</span> /usr/share/rss/app/actualize_script.php &gt; /tmp/FreshRSS.<span class="hljs-built_in">log</span> <span class="hljs-number">2</span>&gt;&amp;<span class="hljs-number">1</span></code></pre><p>按Esc，输入*:wq*保存退出。</p><p>注意：输完内容后必须再加多一个换行符，不要用在windows下编辑文件，因为会出现换行符不兼容问题。</p><p>开启cron定时任务</p><pre><code class="hljs bash">/etc/init.d/cron start</code></pre><h3 id="安装扩展"><a href="#安装扩展" class="headerlink" title="安装扩展"></a>安装扩展</h3><p>在后台扩展处有详细扩展说明，默认没有安装。需要自己下载扩展包，解压放置/rss/extensions 目录中即可。注意权限更改。返回网页可以直接管理。</p><p>推荐开启：Fixed Nav Menu、Image Proxy、Mobile Scroll Menu、Touch Control</p><h3 id="手机访问"><a href="#手机访问" class="headerlink" title="手机访问"></a>手机访问</h3><p>实际上开启扩展后在手机上访问感觉挺不错，不过也可以配合FeedMe来使用</p><p>在”认证”处勾选“允许API访问”</p><p>在“用户账户”处输入API密码，下方有API调用说明</p><p>手机下载FeedMe</p><p>域名：https://域名/api/greader.php</p><p>输入账户密码即可</p><h3 id="开启crontab日志"><a href="#开启crontab日志" class="headerlink" title="开启crontab日志"></a>开启crontab日志</h3><pre><code class="hljs bash">vi /etc/rsyslog.conf</code></pre><p>找到</p><pre><code class="hljs conf">#cron.*           &#x2F;var&#x2F;log&#x2F;cron.log</code></pre><p>删除#注释并保存</p><pre><code class="hljs bash">service rsyslog restartservice cron restart</code></pre><p>重启服务</p><h3 id="顺手给hexo加个RSS"><a href="#顺手给hexo加个RSS" class="headerlink" title="顺手给hexo加个RSS"></a>顺手给hexo加个RSS</h3><h4 id="1、安装插件"><a href="#1、安装插件" class="headerlink" title="1、安装插件"></a>1、安装插件</h4><p>进入hexo目录，打开git bash。输入命令安装插件</p><pre><code class="hljs bash">npm install hexo-generator-feed</code></pre><h4 id="2、添加配置"><a href="#2、添加配置" class="headerlink" title="2、添加配置"></a>2、添加配置</h4><p>打开hexo目录下的_config.yml文件中，添加以下内容。</p><pre><code class="hljs conf">#RSS订阅plugin:- hexo-generator-feed#Feed Atomfeed:type: atompath: atom.xmllimit: 20</code></pre><h4 id="3、添加主题配置"><a href="#3、添加主题配置" class="headerlink" title="3、添加主题配置"></a>3、添加主题配置</h4><p>打开主题目录下的_config.yml目录下，添加以下内容。</p><pre><code class="hljs conf">rss: &#x2F;atom.xml</code></pre><h3 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h3><pre><code class="hljs tex">service cron restart//重启服务service cron status//crontab服务状态service cron stop//停止服务service cron start//启动服务service crond reload //重新载入配置tail /var/log/cron.log//记录crontab服务日志tail /var/log/messages//仅包含一般的非关键消息。类别是info，notice和warntail /var/log/syslog//包含auth类型以外的所有消息 tail /tmp/FreshRSS.log//FreshRSS输出日志</code></pre>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;一直都是RSS阅读的重度依赖者，由于懒，所以都是选择使用Inoreader、Feedly之类的平台进行订阅阅读，但是由于各式各样的原因，不得不让我放弃它们开始折腾自建。&lt;/p&gt;
+&lt;p&gt;目前自建使用比较多的应该是Tiny Tiny RSS、Miniflux和FreshRSS这
+      
+    
+    </summary>
+    
+    
+      <category term="记录" scheme="http://hooo.win/categories/%E8%AE%B0%E5%BD%95/"/>
+    
+    
+      <category term="FreshRSS" scheme="http://hooo.win/tags/FreshRSS/"/>
+    
+  </entry>
   
   <entry>
     <title>搭建jsDelivr+Github图床</title>
